@@ -1,11 +1,20 @@
 package cl.json;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 
+import android.util.Log;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
 import android.content.Intent;
 import android.content.ActivityNotFoundException;
+import android.webkit.URLUtil;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -60,8 +69,17 @@ public class RNShareModule extends ReactContextBaseJavaModule {
     }
 
     if (hasValidKey("share_file", options)) {
+      String fileUrl = options.getString("share_file");
+      boolean isLocal = URLUtil.isFileUrl(fileUrl);
+      File file;
+      if (isLocal) {
+        file = new File(fileUrl);
+      } else {
+        // Download and save file
+        String tempFileUrl = downloadFromUrl(fileUrl);
+        file = new File(tempFileUrl != null ? tempFileUrl : fileUrl);
+      }
       // Create the Uri from the media
-      File file = new File(options.getString("share_file"));
       Uri uri = Uri.fromFile(file);
       // Set the MIME type
       String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
@@ -102,4 +120,41 @@ public class RNShareModule extends ReactContextBaseJavaModule {
     return options.hasKey(key) && !options.isNull(key);
   }
 
+  /**
+   * Download a file
+   */
+   public String downloadFromUrl(String imageURL) {
+       try {
+          // Create temp file
+           File outputDir = this.reactContext.getExternalCacheDir();
+           String fileName = imageURL.substring(imageURL.lastIndexOf("/"));
+           String extension = fileName.substring(fileName.lastIndexOf("."));
+           String name = fileName.replace("." + extension, "");
+           File outputFile = File.createTempFile(name, extension, outputDir);
+           String outputFileUrl = outputFile.getAbsolutePath();
+
+           URL url = new URL(imageURL);
+           File file = new File(outputFileUrl);
+           // Open a connection to that URL.
+           URLConnection ucon = url.openConnection();
+           // Define InputStreams to read from the URLConnection.
+           InputStream is = ucon.getInputStream();
+           BufferedInputStream bis = new BufferedInputStream(is);
+           // Read bytes to the Buffer until there is nothing more to read(-1).
+           ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+           //We create an array of bytes
+           byte[] data = new byte[50];
+           int current = 0;
+           while((current = bis.read(data,0,data.length)) != -1){
+                 buffer.write(data,0,current);
+           }
+           FileOutputStream fos = new FileOutputStream(file);
+           fos.write(buffer.toByteArray());
+           fos.close();
+           return outputFileUrl;
+       } catch (IOException e) {
+           Log.d("ImageDownload", "Error: " + e);
+           return null;
+       }
+    }
 }
