@@ -34,7 +34,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     self.documentController = [UIDocumentInteractionController interactionControllerWithURL:fileUrl];
     self.documentController.delegate = self;
     UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-    [self.documentController presentOptionsMenuFromRect:ctrl.view.bounds inView:ctrl.view animated:YES];
+    [self.documentController presentOptionsMenuFromRect:CGRectZero inView:ctrl.view animated:YES];
 }
 
 - (NSURL*) downloadFile:(NSURL *)fileUrl {
