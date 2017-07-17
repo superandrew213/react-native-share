@@ -60,6 +60,8 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     NSArray *items = @[fileUrl];
     UIActivityViewController *activityController = [[UIActivityViewControllerInstagramOnly alloc]initWithActivityItems:items applicationActivities:nil];
     
+    activityController.excludedActivityTypes = @[UIActivityTypeAirDrop];
+    
     // For iPad only
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         activityController.modalPresentationStyle = UIModalPresentationPopover;
