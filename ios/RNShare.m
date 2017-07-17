@@ -2,9 +2,23 @@
 #import "RNShare.h"
 #import "RCTConvert.h"
 
-@implementation RNShare
+_Bool INSTAGRAM_ONLY = NO;
 
-static NSString *const tempFilePath = @"MyThingNotificationKey";
+@implementation UIActivityViewControllerInstagramOnly : UIActivityViewController
+- (BOOL)_shouldExcludeActivityType:(UIActivity *)activity
+{
+//    NSLog(@"%@", [activity activityType]);
+    if (!INSTAGRAM_ONLY) {
+        return NO;
+    }
+    if ([[activity activityType] isEqualToString:@"com.burbn.instagram.shareextension"] || [[activity activityType] isEqualToString:@"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"]) {
+        return NO;
+    }
+    return YES;
+}
+@end
+
+@implementation RNShare
 
 - (dispatch_queue_t)methodQueue
 {
@@ -19,7 +33,13 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     // Checks if http or https
     BOOL isRemote = [NSURL URLWithString:shareFile].scheme;
     // Check if limited
-    BOOL isLimited = [RCTConvert BOOL:options[@"limited"]];
+    BOOL instagramOnly = [RCTConvert BOOL:options[@"instagramOnly"]];
+    
+    if (instagramOnly) {
+        INSTAGRAM_ONLY = YES;
+    } else {
+        INSTAGRAM_ONLY = NO;
+    }
     
     NSURL *fileToShare;
     if (isRemote) {
@@ -31,27 +51,14 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     }
     
     if (fileToShare) {
-        [self displayDocument:fileToShare isLimited:isLimited callback:callback];
+        [self displayDocument:fileToShare callback:callback];
     }
 }
 
-- (void) displayDocument:(NSURL*)fileUrl isLimited:(BOOL)isLimited callback:(RCTResponseSenderBlock)callback {
+- (void) displayDocument:(NSURL*)fileUrl callback:(RCTResponseSenderBlock)callback {
     UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     NSArray *items = @[fileUrl];
-    UIActivityViewController *activityController = [[UIActivityViewController alloc]initWithActivityItems:items applicationActivities:nil];
-
-    if (isLimited) {
-        activityController.excludedActivityTypes = @[UIActivityTypeAirDrop,
-                                                    UIActivityTypeAddToReadingList,
-                                                    UIActivityTypeCopyToPasteboard,
-                                                    UIActivityTypeSaveToCameraRoll,
-                                                    UIActivityTypePrint,
-                                                    UIActivityTypeAssignToContact,
-                                                    UIActivityTypeCopyToPasteboard,
-                                                    @"com.apple.reminders.RemindersEditorExtension",
-                                                    @"com.apple.mobilenotes.SharingExtension",
-                                                    @"com.apple.mobileslideshow.StreamShareService"];
-    }
+    UIActivityViewController *activityController = [[UIActivityViewControllerInstagramOnly alloc]initWithActivityItems:items applicationActivities:nil];
     
     // For iPad only
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
