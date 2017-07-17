@@ -2,6 +2,10 @@
 
 @interface RNShare : NSObject <RCTBridgeModule>
 
-@property (nonatomic) UIDocumentInteractionController * documentController;
+@end
+
+@interface UIActivityViewController (Private)
+
+- (BOOL)_shouldExcludeActivityType:(UIActivity*)activity;
 
 @end
