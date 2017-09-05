@@ -29,18 +29,19 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback)
 {
     NSString *shareFile = [RCTConvert NSString:options[@"share_file"]];
-    
+
     // Checks if http or https
     BOOL isRemote = [NSURL URLWithString:shareFile].scheme;
     // Check if limited
     BOOL instagramOnly = [RCTConvert BOOL:options[@"instagramOnly"]];
-    
+    BOOL restrictLocalStorage = [RCTConvert BOOL:options[@"restrictLocalStorage"]];
+
     if (instagramOnly) {
         INSTAGRAM_ONLY = YES;
     } else {
         INSTAGRAM_ONLY = NO;
     }
-    
+
     NSURL *fileToShare;
     if (isRemote) {
         // Download file first
@@ -49,32 +50,54 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     } else {
         fileToShare = [NSURL fileURLWithPath:shareFile];
     }
-    
+
     if (fileToShare) {
-        [self displayDocument:fileToShare callback:callback];
+        [self displayDocument:fileToShare restrictLocalStorage:restrictLocalStorage callback:callback];
     }
 }
 
-- (void) displayDocument:(NSURL*)fileUrl callback:(RCTResponseSenderBlock)callback {
+- (void) displayDocument:(NSURL*)fileUrl restrictLocalStorage:(BOOL)restrictLocalStorage callback:(RCTResponseSenderBlock)callback {
     UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     NSArray *items = @[fileUrl];
     UIActivityViewController *activityController = [[UIActivityViewControllerInstagramOnly alloc]initWithActivityItems:items applicationActivities:nil];
-    
-    activityController.excludedActivityTypes = @[UIActivityTypeAirDrop];
-    
+
+    if (restrictLocalStorage) {
+        activityController.excludedActivityTypes = @[
+            UIActivityTypePostToFacebook,
+            UIActivityTypePostToTwitter,
+            UIActivityTypePostToWeibo,
+            UIActivityTypeMessage,
+            UIActivityTypeMail,
+            UIActivityTypePrint,
+            UIActivityTypeCopyToPasteboard,
+            UIActivityTypeAssignToContact,
+            UIActivityTypeSaveToCameraRoll,
+            UIActivityTypeAddToReadingList,
+            UIActivityTypePostToFlickr,
+            UIActivityTypePostToVimeo,
+            UIActivityTypePostToTencentWeibo,
+            UIActivityTypeAirDrop,
+            UIActivityTypeOpenInIBooks,
+            @"com.apple.reminders.RemindersEditorExtension",
+            @"com.apple.mobilenotes.SharingExtension",
+            @"com.google.Drive.ShareExtension"
+        ];
+    }
+
+
     // For iPad only
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         activityController.modalPresentationStyle = UIModalPresentationPopover;
-        
+
         UIPopoverPresentationController *presentationController = activityController.popoverPresentationController;
         [presentationController setDelegate:self];
         presentationController.permittedArrowDirections = 0;
         presentationController.sourceView = [[UIApplication sharedApplication] keyWindow];
         presentationController.sourceRect = [[UIApplication sharedApplication] keyWindow].bounds;
-        
+
         [ctrl setPreferredContentSize:CGSizeMake(320, 480)];
     }
-    
+
     [ctrl presentViewController:activityController animated:YES completion:^{
         callback(@[[NSNull null]]);
     }];
