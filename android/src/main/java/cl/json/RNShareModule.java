@@ -15,6 +15,8 @@ import android.webkit.MimeTypeMap;
 import android.content.Intent;
 import android.content.ActivityNotFoundException;
 import android.webkit.URLUtil;
+import android.app.Activity;
+import android.support.v4.content.FileProvider;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -56,6 +58,7 @@ public class RNShareModule extends ReactContextBaseJavaModule {
    * @return {@link Intent} intent
    */
   private Intent createShareIntent(ReadableMap options) {
+    Activity currentActivity = getCurrentActivity();
     Intent intent = new Intent(android.content.Intent.ACTION_SEND);
 
     if (hasValidKey("share_text", options)) {
@@ -72,15 +75,17 @@ public class RNShareModule extends ReactContextBaseJavaModule {
       String fileUrl = options.getString("share_file");
       boolean isLocal = URLUtil.isFileUrl(fileUrl);
       File file;
+      Uri uri;
       if (isLocal) {
         file = new File(fileUrl);
+        uri = Uri.fromFile(file);
       } else {
         // Download and save file
         String tempFileUrl = downloadFromUrl(fileUrl);
         file = new File(tempFileUrl != null ? tempFileUrl : fileUrl);
+        uri = FileProvider.getUriForFile(currentActivity, currentActivity.getApplicationContext().getPackageName() + ".provider", file);
       }
-      // Create the Uri from the media
-      Uri uri = Uri.fromFile(file);
+
       // Set the MIME type
       String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
       String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
