@@ -8,6 +8,7 @@ import java.net.URLConnection;
 import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import android.util.Log;
 import android.net.Uri;
@@ -17,6 +18,8 @@ import android.content.ActivityNotFoundException;
 import android.webkit.URLUtil;
 import android.app.Activity;
 import android.support.v4.content.FileProvider;
+import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -92,6 +95,9 @@ public class RNShareModule extends ReactContextBaseJavaModule {
       intent.setType(type);
       // Add the Uri to the Intent.
       intent.putExtra(Intent.EXTRA_STREAM, uri);
+      // Set permission
+      givePermissionToAccessUri(intent, uri);
+
     }
 
     return intent;
@@ -123,6 +129,14 @@ public class RNShareModule extends ReactContextBaseJavaModule {
    */
   private boolean hasValidKey(String key, ReadableMap options) {
     return options.hasKey(key) && !options.isNull(key);
+  }
+
+  private void givePermissionToAccessUri(Intent intent, Uri uri) {
+    List<ResolveInfo> resInfoList = this.reactContext.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+      for (ResolveInfo resolveInfo : resInfoList) {
+          String packageName = resolveInfo.activityInfo.packageName;
+          this.reactContext.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+      }
   }
 
   /**
