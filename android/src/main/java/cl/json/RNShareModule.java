@@ -18,9 +18,6 @@ import android.content.Intent;
 import android.content.ActivityNotFoundException;
 import android.webkit.URLUtil;
 import android.app.Activity;
-import android.support.v4.content.FileProvider;
-import android.content.pm.ResolveInfo;
-import android.content.pm.PackageManager;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -79,27 +76,26 @@ public class RNShareModule extends ReactContextBaseJavaModule {
       String fileUrl = options.getString("share_file");
       boolean isLocal = URLUtil.isFileUrl(fileUrl);
       File file;
-      Uri uri;
       if (isLocal) {
         file = new File(fileUrl);
-        uri = Uri.fromFile(file);
       } else {
         // Download and save file
         String tempFileUrl = downloadFromUrl(fileUrl);
         file = new File(tempFileUrl != null ? tempFileUrl : fileUrl);
-        uri = FileProvider.getUriForFile(currentActivity, currentActivity.getApplicationContext().getPackageName() + ".share.provider", file);
-        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        // Clean up file
+        try {
+          file.deleteOnExit();
+        } catch(Exception ex) {
+          // Do nothing
+        }
       }
 
       // Add the Uri to the Intent.
+      Uri uri = Uri.fromFile(file);
       String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
       String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+      intent.setType(type);
       intent.putExtra(Intent.EXTRA_STREAM, uri);
-      intent.setDataAndType(uri, type);
-
-      // Set permission
-      givePermissionToAccessUri(intent, uri);
-
     }
 
     return intent;
@@ -133,50 +129,38 @@ public class RNShareModule extends ReactContextBaseJavaModule {
     return options.hasKey(key) && !options.isNull(key);
   }
 
-  private void givePermissionToAccessUri(Intent intent, Uri uri) {
-    try {
-      List<ResolveInfo> resInfoList = this.reactContext.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-      for (ResolveInfo resolveInfo : resInfoList) {
-          String packageName = resolveInfo.activityInfo.packageName;
-          this.reactContext.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-      }
-    } catch (Exception e) {
-      // Do nothing
-    }
-  }
-
   /**
    * Download a file
    */
    public String downloadFromUrl(String imageURL) {
        try {
           // Create temp file
-           File outputDir = this.reactContext.getExternalCacheDir();
-           String fileName = imageURL.substring(imageURL.lastIndexOf("/"));
-           String extension = fileName.substring(fileName.lastIndexOf("."));
-           String name = fileName.replace("." + extension, "");
-           File outputFile = File.createTempFile(name, extension, outputDir);
-           String outputFileUrl = outputFile.getAbsolutePath();
+          File outputDir = this.getReactApplicationContext().getExternalFilesDir(null);
+          String fileName = imageURL.substring(imageURL.lastIndexOf("/"));
+          String extension = fileName.substring(fileName.lastIndexOf("."));
+          String name = fileName.replace("." + extension, "");
+          File outputFile = File.createTempFile(name, extension, outputDir);
+          String outputFileUrl = outputFile.getAbsolutePath();
 
-           URL url = new URL(imageURL);
-           File file = new File(outputFileUrl);
-           // Open a connection to that URL.
-           URLConnection ucon = url.openConnection();
-           // Define InputStreams to read from the URLConnection.
-           InputStream is = ucon.getInputStream();
-           BufferedInputStream bis = new BufferedInputStream(is);
-           // Read bytes to the Buffer until there is nothing more to read(-1).
-           ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-           //We create an array of bytes
-           byte[] data = new byte[50];
-           int current = 0;
-           while((current = bis.read(data,0,data.length)) != -1){
-                 buffer.write(data,0,current);
-           }
-           FileOutputStream fos = new FileOutputStream(file);
-           fos.write(buffer.toByteArray());
-           fos.close();
-           return outputFileUrl;
+          URL url = new URL(imageURL);
+          File file = new File(outputFileUrl);
+          // Open a connection to that URL.
+          URLConnection ucon = url.openConnection();
+          // Define InputStreams to read from the URLConnection.
+          InputStream is = ucon.getInputStream();
+          BufferedInputStream bis = new BufferedInputStream(is);
+          // Read bytes to the Buffer until there is nothing more to read(-1).
+          ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+          //We create an array of bytes
+          byte[] data = new byte[50];
+          int current = 0;
+          while((current = bis.read(data,0,data.length)) != -1){
+                buffer.write(data,0,current);
+          }
+          FileOutputStream fos = new FileOutputStream(file);
+          fos.write(buffer.toByteArray());
+          fos.close();
+          return outputFileUrl;
        } catch (IOException e) {
            Log.d("ImageDownload", "Error: " + e);
            return null;
