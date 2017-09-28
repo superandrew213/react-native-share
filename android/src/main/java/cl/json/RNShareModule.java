@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import java.lang.Exception;
 
 import android.util.Log;
 import android.net.Uri;
@@ -86,15 +87,16 @@ public class RNShareModule extends ReactContextBaseJavaModule {
         // Download and save file
         String tempFileUrl = downloadFromUrl(fileUrl);
         file = new File(tempFileUrl != null ? tempFileUrl : fileUrl);
-        uri = FileProvider.getUriForFile(currentActivity, currentActivity.getApplicationContext().getPackageName() + ".provider", file);
+        uri = FileProvider.getUriForFile(currentActivity, currentActivity.getApplicationContext().getPackageName() + ".share.provider", file);
+        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
       }
 
-      // Set the MIME type
+      // Add the Uri to the Intent.
       String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
       String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-      intent.setType(type);
-      // Add the Uri to the Intent.
       intent.putExtra(Intent.EXTRA_STREAM, uri);
+      intent.setDataAndType(uri, type);
+
       // Set permission
       givePermissionToAccessUri(intent, uri);
 
@@ -132,11 +134,15 @@ public class RNShareModule extends ReactContextBaseJavaModule {
   }
 
   private void givePermissionToAccessUri(Intent intent, Uri uri) {
-    List<ResolveInfo> resInfoList = this.reactContext.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+    try {
+      List<ResolveInfo> resInfoList = this.reactContext.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
       for (ResolveInfo resolveInfo : resInfoList) {
           String packageName = resolveInfo.activityInfo.packageName;
           this.reactContext.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
       }
+    } catch (Exception e) {
+      // Do nothing
+    }
   }
 
   /**
