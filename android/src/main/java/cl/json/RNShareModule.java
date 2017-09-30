@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.lang.Exception;
+import java.util.UUID;
 
 import android.util.Log;
 import android.net.Uri;
@@ -18,6 +19,7 @@ import android.content.Intent;
 import android.content.ActivityNotFoundException;
 import android.webkit.URLUtil;
 import android.app.Activity;
+import android.os.Environment;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -134,16 +136,14 @@ public class RNShareModule extends ReactContextBaseJavaModule {
    */
    public String downloadFromUrl(String imageURL) {
        try {
-          // Create temp file
-          File outputDir = this.getReactApplicationContext().getExternalFilesDir(null);
+          // Create file
           String fileName = imageURL.substring(imageURL.lastIndexOf("/"));
-          String extension = fileName.substring(fileName.lastIndexOf("."));
-          String name = fileName.replace("." + extension, "");
-          File outputFile = File.createTempFile(name, extension, outputDir);
-          String outputFileUrl = outputFile.getAbsolutePath();
+          String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
+          String name = UUID.randomUUID().toString();
+          File file = new File(Environment.getExternalStorageDirectory(), name + "." + extension);
 
+          // Download and write to file
           URL url = new URL(imageURL);
-          File file = new File(outputFileUrl);
           // Open a connection to that URL.
           URLConnection ucon = url.openConnection();
           // Define InputStreams to read from the URLConnection.
@@ -151,7 +151,7 @@ public class RNShareModule extends ReactContextBaseJavaModule {
           BufferedInputStream bis = new BufferedInputStream(is);
           // Read bytes to the Buffer until there is nothing more to read(-1).
           ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-          //We create an array of bytes
+          //Create an array of bytes
           byte[] data = new byte[50];
           int current = 0;
           while((current = bis.read(data,0,data.length)) != -1){
@@ -159,8 +159,10 @@ public class RNShareModule extends ReactContextBaseJavaModule {
           }
           FileOutputStream fos = new FileOutputStream(file);
           fos.write(buffer.toByteArray());
+          fos.flush();
           fos.close();
-          return outputFileUrl;
+
+          return file.getAbsolutePath();
        } catch (IOException e) {
            Log.d("ImageDownload", "Error: " + e);
            return null;
