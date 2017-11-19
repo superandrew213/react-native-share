@@ -63,24 +63,24 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
 
     if (restrictLocalStorage) {
         activityController.excludedActivityTypes = @[
-            UIActivityTypePostToFacebook,
-            UIActivityTypePostToTwitter,
-            UIActivityTypePostToWeibo,
-            UIActivityTypeMessage,
-            UIActivityTypeMail,
-            UIActivityTypePrint,
+            // UIActivityTypePostToFacebook,
+            // UIActivityTypePostToTwitter,
+            // UIActivityTypePostToWeibo,
+            // UIActivityTypeMessage,
+            // UIActivityTypeMail,
+            // UIActivityTypePrint,
             UIActivityTypeCopyToPasteboard,
             UIActivityTypeAssignToContact,
             UIActivityTypeSaveToCameraRoll,
             UIActivityTypeAddToReadingList,
-            UIActivityTypePostToFlickr,
-            UIActivityTypePostToVimeo,
-            UIActivityTypePostToTencentWeibo,
+            // UIActivityTypePostToFlickr,
+            // UIActivityTypePostToVimeo,
+            // UIActivityTypePostToTencentWeibo,
             UIActivityTypeAirDrop,
             UIActivityTypeOpenInIBooks,
             @"com.apple.reminders.RemindersEditorExtension",
             @"com.apple.mobilenotes.SharingExtension",
-            @"com.google.Drive.ShareExtension"
+            // @"com.google.Drive.ShareExtension"
         ];
     }
 
