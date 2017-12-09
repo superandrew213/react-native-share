@@ -140,7 +140,7 @@ public class RNShareModule extends ReactContextBaseJavaModule {
           String fileName = imageURL.substring(imageURL.lastIndexOf("/"));
           String extension = MimeTypeMap.getFileExtensionFromUrl(fileName);
           String name = UUID.randomUUID().toString();
-          File file = new File(Environment.getExternalStorageDirectory(), name + "." + extension);
+          File file = new File(this.getReactApplicationContext().getExternalFilesDir(null), name + "." + extension);
 
           // Download and write to file
           URL url = new URL(imageURL);
