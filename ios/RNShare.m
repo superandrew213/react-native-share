@@ -98,9 +98,14 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
         [ctrl setPreferredContentSize:CGSizeMake(320, 480)];
     }
 
-    [ctrl presentViewController:activityController animated:YES completion:^{
-        callback(@[[NSNull null]]);
+    [activityController setCompletionHandler:^(NSString *activityType, BOOL completed) {
+        callback(@[[NSNull null], @{
+                       @"activityType": activityType ?: [NSNull null],
+                       @"completed": [NSNumber numberWithBool:completed],
+                       }]);
     }];
+
+    [ctrl presentViewController:activityController animated:YES completion:nil];
 }
 
 - (NSURL*) downloadFile:(NSURL *)fileUrl {

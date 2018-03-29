@@ -12,6 +12,8 @@ import java.util.List;
 import java.lang.Exception;
 import java.util.UUID;
 
+import org.json.JSONObject;
+
 import android.util.Log;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
@@ -49,9 +51,14 @@ public class RNShareModule extends ReactContextBaseJavaModule {
 
     try {
       this.reactContext.startActivity(intentChooser);
-      callback.invoke("OK");
-    } catch (ActivityNotFoundException ex) {
-      callback.invoke("not_available");
+      // Create dummy result object to keep consistence with IOS
+      // Unfortunately ANDROID doesn't not provide intent result
+      JSONObject result = new JSONObject();
+      result.put("activityType", null);
+      result.put("completed", null);
+      callback.invoke(null, result);
+    } catch (Exception ex) {
+      callback.invoke(ex.getMessage());
     }
   }
 
