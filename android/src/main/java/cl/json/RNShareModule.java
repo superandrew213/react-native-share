@@ -12,8 +12,6 @@ import java.util.List;
 import java.lang.Exception;
 import java.util.UUID;
 
-import org.json.JSONObject;
-
 import android.util.Log;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
@@ -27,6 +25,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.Callback;
 
@@ -53,9 +53,9 @@ public class RNShareModule extends ReactContextBaseJavaModule {
       this.reactContext.startActivity(intentChooser);
       // Create dummy result object to keep consistence with IOS
       // Unfortunately ANDROID doesn't not provide intent result
-      JSONObject result = new JSONObject();
-      result.put("activityType", null);
-      result.put("completed", null);
+      WritableMap result = Arguments.createMap();
+      result.putNull("activityType");
+      result.putNull("completed");
       callback.invoke(null, result);
     } catch (Exception ex) {
       callback.invoke(ex.getMessage());
