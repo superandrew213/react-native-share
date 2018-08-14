@@ -20,6 +20,7 @@ import android.content.ActivityNotFoundException;
 import android.webkit.URLUtil;
 import android.app.Activity;
 import android.os.Environment;
+import android.os.StrictMode;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -46,16 +47,21 @@ public class RNShareModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void open(ReadableMap options, Callback callback) {
-    Intent shareIntent = createShareIntent(options);
-    Intent intentChooser = createIntentChooser(options, shareIntent);
 
     try {
+      StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+      StrictMode.setVmPolicy(builder.build());
+
+      Intent shareIntent = createShareIntent(options);
+      Intent intentChooser = createIntentChooser(options, shareIntent);
       this.reactContext.startActivity(intentChooser);
+
       // Create dummy result object to keep consistence with IOS
       // Unfortunately ANDROID doesn't not provide intent result
       WritableMap result = Arguments.createMap();
       result.putNull("activityType");
       result.putNull("completed");
+
       callback.invoke(null, result);
     } catch (Exception ex) {
       callback.invoke(ex.getMessage());
