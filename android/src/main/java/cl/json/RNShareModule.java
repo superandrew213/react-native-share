@@ -20,7 +20,7 @@ import android.content.ActivityNotFoundException;
 import android.webkit.URLUtil;
 import android.app.Activity;
 import android.os.Environment;
-import android.os.StrictMode;
+import android.support.v4.content.FileProvider;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -49,9 +49,6 @@ public class RNShareModule extends ReactContextBaseJavaModule {
   public void open(ReadableMap options, Callback callback) {
 
     try {
-      StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-      StrictMode.setVmPolicy(builder.build());
-
       Intent shareIntent = createShareIntent(options);
       Intent intentChooser = createIntentChooser(options, shareIntent);
       this.reactContext.startActivity(intentChooser);
@@ -106,9 +103,10 @@ public class RNShareModule extends ReactContextBaseJavaModule {
       }
 
       // Add the Uri to the Intent.
-      Uri uri = Uri.fromFile(file);
       String extension = MimeTypeMap.getFileExtensionFromUrl(file.getName());
       String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+      // Uri uri = Uri.fromFile(file);
+      Uri uri = FileProvider.getUriForFile(this.getReactApplicationContext(), "com.sensio.instapreview.provider", file);
       intent.setType(type);
       intent.putExtra(Intent.EXTRA_STREAM, uri);
     }
