@@ -1,4 +1,4 @@
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 
 @interface RNShare : NSObject <RCTBridgeModule>
 

@@ -1,7 +1,8 @@
-#import <MessageUI/MessageUI.h>
+
 #import "RNShare.h"
-#import "RCTConvert.h"
-#import "RCTUtils.h"
+#import <MessageUI/MessageUI.h>
+#import <React/RCTConvert.h>
+#import <React/RCTUtils.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 
 @import Photos;
