@@ -174,7 +174,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
         [ctrl setPreferredContentSize:CGSizeMake(320, 480)];
     }
 
-    [activityController setCompletionHandler:^(NSString *activityType, BOOL completed) {
+    [activityController setCompletionWithItemsHandler:^(NSString *activityType, BOOL completed, NSArray * _Nullable returnedItems, NSError * _Nullable activityError) {
         callback(@[[NSNull null], @{
                        @"activityType": activityType ?: [NSNull null],
                        @"completed": [NSNumber numberWithBool:completed],
