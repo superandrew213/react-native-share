@@ -68,16 +68,17 @@ public class RNShareModule extends ReactContextBaseJavaModule {
   }
 
   /**
-   * Creates an {@link Intent} to be shared from a set of {@link ReadableMap} options
+   * Creates an {@link Intent} to be shared from a set of {@link ReadableMap}
+   * options
+   *
    * @param {@link ReadableMap} options
    * @return {@link Intent} intent
    */
   private Intent createShareIntent(ReadableMap options) {
-    File file = getFile(options);
-    Uri uri = saveToPhoneGallery(file);
+    Uri uri = Uri.parse(options.getString("share_file"));
 
     Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-    intent.setType(getFileMimeType(file));
+    intent.setType(this.getReactApplicationContext().getContentResolver().getType(uri));
     intent.putExtra(Intent.EXTRA_STREAM, uri);
 
     if (hasValidKey("shareToIgDirectly", options) && options.getBoolean("shareToIgDirectly")) {
@@ -89,6 +90,7 @@ public class RNShareModule extends ReactContextBaseJavaModule {
 
   /**
    * Creates an {@link Intent} representing an intent chooser
+   *
    * @param {@link ReadableMap} options
    * @param {@link Intent} intent to share
    * @return {@link Intent} intent
@@ -107,6 +109,7 @@ public class RNShareModule extends ReactContextBaseJavaModule {
 
   /**
    * Checks if a given key is valid
+   *
    * @param @{link String} key
    * @param @{link ReadableMap} options
    * @return boolean representing whether the key exists and has a value
@@ -148,16 +151,17 @@ public class RNShareModule extends ReactContextBaseJavaModule {
     String mimeType = getFileMimeType(file);
     ContentValues values = new ContentValues(2);
 
-
     if (mimeType.startsWith("video")) {
       values.put(MediaStore.Video.Media.MIME_TYPE, mimeType);
       values.put(MediaStore.Video.Media.DATA, file.getAbsolutePath());
-      return this.getReactApplicationContext().getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+      return this.getReactApplicationContext().getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+          values);
     }
 
     values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
     values.put(MediaStore.Images.Media.DATA, file.getAbsolutePath());
-    return this.getReactApplicationContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+    return this.getReactApplicationContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        values);
   }
 
   private String downloadFromUrl(String imageURL) {
@@ -177,11 +181,11 @@ public class RNShareModule extends ReactContextBaseJavaModule {
       BufferedInputStream bis = new BufferedInputStream(is);
       // Read bytes to the Buffer until there is nothing more to read(-1).
       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-      //Create an array of bytes
+      // Create an array of bytes
       byte[] data = new byte[50];
       int current = 0;
-      while((current = bis.read(data,0,data.length)) != -1){
-            buffer.write(data,0,current);
+      while ((current = bis.read(data, 0, data.length)) != -1) {
+        buffer.write(data, 0, current);
       }
       FileOutputStream fos = new FileOutputStream(file);
       fos.write(buffer.toByteArray());
@@ -190,8 +194,8 @@ public class RNShareModule extends ReactContextBaseJavaModule {
 
       return file.getAbsolutePath();
     } catch (IOException e) {
-        Log.d("ImageDownload", "Error: " + e);
-        return null;
+      Log.d("ImageDownload", "Error: " + e);
+      return null;
     }
   }
 }
