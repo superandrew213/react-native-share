@@ -7,21 +7,6 @@
 
 @import Photos;
 
-_Bool INSTAGRAM_ONLY = NO;
-
-@implementation UIActivityViewControllerInstagramOnly : UIActivityViewController
-- (BOOL)_shouldExcludeActivityType:(UIActivity *)activity
-{
-    if (!INSTAGRAM_ONLY) {
-        return NO;
-    }
-    if ([[activity activityType] isEqualToString:@"com.burbn.instagram.shareextension"] || [[activity activityType] isEqualToString:@"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"]) {
-        return NO;
-    }
-    return YES;
-}
-@end
-
 @implementation RNShare
 
 - (dispatch_queue_t)methodQueue
@@ -43,9 +28,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
 
 
     if (instagramOnly) {
-        INSTAGRAM_ONLY = YES;
-    } else {
-        INSTAGRAM_ONLY = NO;
+        shareFile = [shareFile stringByAppendingString:@".igo"];
     }
 
     NSURL *fileToShare;
@@ -135,7 +118,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
 - (void) displayDocument:(NSURL*)fileUrl restrictLocalStorage:(BOOL)restrictLocalStorage callback:(RCTResponseSenderBlock)callback {
     UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     NSArray *items = @[fileUrl];
-    UIActivityViewController *activityController = [[UIActivityViewControllerInstagramOnly alloc]initWithActivityItems:items applicationActivities:nil];
+    UIActivityViewController *activityController = [[UIActivityViewController alloc]initWithActivityItems:items applicationActivities:nil];
 
     if (restrictLocalStorage) {
         activityController.excludedActivityTypes = @[
@@ -156,7 +139,9 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
                                                      UIActivityTypeOpenInIBooks,
                                                      @"com.apple.reminders.RemindersEditorExtension",
                                                      @"com.apple.mobilenotes.SharingExtension",
-                                                     // @"com.google.Drive.ShareExtension"
+                                                     // @"com.google.Drive.ShareExtension",
+                                                     @"com.burbn.instagram.shareextension",
+                                                     @"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"
                                                      ];
     }
 
