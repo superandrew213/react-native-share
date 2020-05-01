@@ -140,8 +140,8 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
                                                      @"com.apple.reminders.RemindersEditorExtension",
                                                      @"com.apple.mobilenotes.SharingExtension",
                                                      // @"com.google.Drive.ShareExtension",
-                                                     @"com.burbn.instagram.shareextension",
-                                                     @"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"
+                                                     //  @"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"
+                                                     @"com.burbn.instagram.shareextension"
                                                      ];
     }
 
