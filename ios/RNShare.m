@@ -22,14 +22,8 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     BOOL shareToIgDirectly = [RCTConvert BOOL:options[@"shareToIgDirectly"]];
     // Checks if http or https
     BOOL isRemote = [NSURL URLWithString:shareFile].scheme;
-    // Check if limited
-    BOOL instagramOnly = [RCTConvert BOOL:options[@"instagramOnly"]];
     BOOL restrictLocalStorage = [RCTConvert BOOL:options[@"restrictLocalStorage"]];
-
-
-    if (instagramOnly) {
-        shareFile = [shareFile stringByAppendingString:@".igo"];
-    }
+    BOOL instagramOnly = [shareFile hasSuffix:@".igo"];
 
     NSURL *fileToShare;
     if (isRemote) {
@@ -53,7 +47,12 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
             }];
 
         } else {
-            [self displayDocument:fileToShare restrictLocalStorage:restrictLocalStorage callback:callback];
+            if (instagramOnly) {
+                [self displayDocumentIGO:fileToShare callback:callback];
+            } else {
+                [self displayDocument:fileToShare restrictLocalStorage:restrictLocalStorage callback:callback];
+            }
+
         }
     } else {
         callback(@[RCTMakeError(@"failed_to_share", nil, nil)]);
@@ -116,7 +115,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
 }
 
 - (void) displayDocument:(NSURL*)fileUrl restrictLocalStorage:(BOOL)restrictLocalStorage callback:(RCTResponseSenderBlock)callback {
-    UIViewController *ctrl = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    UIViewController *viewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
     NSArray *items = @[fileUrl];
     UIActivityViewController *activityController = [[UIActivityViewController alloc]initWithActivityItems:items applicationActivities:nil];
 
@@ -156,7 +155,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
         presentationController.sourceView = [[UIApplication sharedApplication] keyWindow];
         presentationController.sourceRect = [[UIApplication sharedApplication] keyWindow].bounds;
 
-        [ctrl setPreferredContentSize:CGSizeMake(320, 480)];
+        [viewController setPreferredContentSize:CGSizeMake(320, 480)];
     }
 
     [activityController setCompletionWithItemsHandler:^(NSString *activityType, BOOL completed, NSArray * _Nullable returnedItems, NSError * _Nullable activityError) {
@@ -166,7 +165,29 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
                        }]);
     }];
 
-    [ctrl presentViewController:activityController animated:YES completion:nil];
+    [viewController presentViewController:activityController animated:YES completion:nil];
+}
+
+- (void) displayDocumentIGO:(NSURL*)fileUrl callback:(RCTResponseSenderBlock)callback {
+    UIViewController *viewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+
+    UIDocumentInteractionController *documentController = [UIDocumentInteractionController interactionControllerWithURL:fileUrl];
+
+    documentController.delegate = self;
+    documentController.UTI = @"com.instagram.exclusivegram";
+
+    while (viewController.presentedViewController) {
+        viewController = viewController.presentedViewController;
+    }
+
+    if ([documentController presentOpenInMenuFromRect:viewController.view.bounds inView:viewController.view animated:YES]) {
+        callback(@[[NSNull null], @{
+                       @"activityType": @"com.burbn.instagram",
+                       @"completed": @true,
+                       }]);
+    } else {
+       callback(@[RCTMakeError(@"cannot_open_ig", nil, nil)]);
+    }
 }
 
 - (NSURL*) downloadFile:(NSURL *)fileUrl {

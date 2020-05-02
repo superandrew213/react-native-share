@@ -6,6 +6,8 @@
 
 @interface UIActivityViewController (Private)
 
-- (BOOL)_shouldExcludeActivityType:(UIActivity*)activity;
+@end
+
+@interface UIDocumentInteractionController (Private);
 
 @end
