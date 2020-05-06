@@ -23,7 +23,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     // Checks if http or https
     BOOL isRemote = [NSURL URLWithString:shareFile].scheme;
     BOOL restrictLocalStorage = [RCTConvert BOOL:options[@"restrictLocalStorage"]];
-    BOOL instagramOnly = [shareFile hasSuffix:@".igo"];
+    BOOL instagramOnly = [shareFile hasSuffix:@".igo"] || [shareFile hasSuffix:@".ig"];
 
     NSURL *fileToShare;
     if (isRemote) {
