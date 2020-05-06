@@ -120,28 +120,34 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     UIActivityViewController *activityController = [[UIActivityViewController alloc]initWithActivityItems:items applicationActivities:nil];
 
     if (restrictLocalStorage) {
-        activityController.excludedActivityTypes = @[
-                                                     // UIActivityTypePostToFacebook,
-                                                     // UIActivityTypePostToTwitter,
-                                                     // UIActivityTypePostToWeibo,
-                                                     // UIActivityTypeMessage,
-                                                     // UIActivityTypeMail,
-                                                     // UIActivityTypePrint,
-                                                     UIActivityTypeCopyToPasteboard,
-                                                     UIActivityTypeAssignToContact,
-                                                     UIActivityTypeSaveToCameraRoll,
-                                                     UIActivityTypeAddToReadingList,
-                                                     // UIActivityTypePostToFlickr,
-                                                     // UIActivityTypePostToVimeo,
-                                                     // UIActivityTypePostToTencentWeibo,
-                                                     UIActivityTypeAirDrop,
-                                                     UIActivityTypeOpenInIBooks,
-                                                     @"com.apple.reminders.RemindersEditorExtension",
-                                                     @"com.apple.mobilenotes.SharingExtension",
-                                                     // @"com.google.Drive.ShareExtension",
-                                                     // @"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"
-                                                     // @"com.burbn.instagram.shareextension"
-                                                     ];
+        if (@available(iOS 11.0, *)) {
+            activityController.excludedActivityTypes = @[
+                                                         UIActivityTypePostToFacebook,
+                                                         UIActivityTypePostToTwitter,
+                                                         UIActivityTypePostToWeibo,
+                                                         UIActivityTypeMessage,
+                                                         UIActivityTypeMail,
+                                                         UIActivityTypePrint,
+                                                         UIActivityTypeCopyToPasteboard,
+                                                         UIActivityTypeAssignToContact,
+                                                         UIActivityTypeSaveToCameraRoll,
+                                                         UIActivityTypeAddToReadingList,
+                                                         UIActivityTypePostToFlickr,
+                                                         UIActivityTypePostToVimeo,
+                                                         UIActivityTypePostToTencentWeibo,
+                                                         UIActivityTypeAirDrop,
+                                                         UIActivityTypeOpenInIBooks,
+                                                         UIActivityTypeMarkupAsPDF,
+                                                         @"com.apple.reminders.RemindersEditorExtension",
+                                                         @"com.apple.mobilenotes.SharingExtension",
+                                                         @"com.google.Drive.ShareExtension",
+                                                         @"com.apple.mobileslideshow.StreamShareService",
+                                                         // @"com.apple.UIKit.activity.Open.Copy.com.burbn.instagram"
+                                                         // @"com.burbn.instagram.shareextension"
+                                                         ];
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
 
