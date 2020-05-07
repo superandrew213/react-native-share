@@ -40,7 +40,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
             // directly
             [self requestPhotoAuthorization:^(BOOL granted) {
                 if (granted) {
-                    [self shareToIg:fileToShare fileType:fileType callback:callback];
+                    [self shareToIg:fileToShare fileType:fileType restrictLocalStorage:restrictLocalStorage callback:callback];
                 } else {
                     callback(@[RCTMakeError(@"photo_library_permission_required", nil, nil)]);
                 }
@@ -48,7 +48,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
 
         } else {
             if (instagramOnly) {
-                [self displayDocumentIGO:fileToShare callback:callback];
+                [self displayDocumentIGO:fileToShare restrictLocalStorage callback:callback];
             } else {
                 [self displayDocument:fileToShare restrictLocalStorage:restrictLocalStorage callback:callback];
             }
@@ -83,7 +83,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
     return [[UIApplication sharedApplication] canOpenURL:appURL];
 }
 
-- (void) shareToIg:(NSURL*)fileUrl fileType:(NSString*)fileType callback:(RCTResponseSenderBlock)callback {
+- (void) shareToIg:(NSURL*)fileUrl fileType:(NSString*)fileType restrictLocalStorage:(BOOL)restrictLocalStorage callback:(RCTResponseSenderBlock)callback {
     // Check if IG installed
     if (![self canShareToIg]) {
         callback(@[RCTMakeError(@"cannot_open_ig", nil, nil)]);
@@ -97,6 +97,11 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
             assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:fileUrl];
         } else {
             assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:fileUrl];
+        }
+        // Can't delete asset after it has been posted - user input required everytime
+        // Temp solution is to just hide it
+        if (restrictLocalStorage) {
+            assetChangeRequest.hidden = true;
         }
         localId = [[assetChangeRequest placeholderForCreatedAsset] localIdentifier];
     } completionHandler:^(BOOL success, NSError *error) {
