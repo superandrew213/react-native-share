@@ -48,7 +48,7 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
 
         } else {
             if (instagramOnly) {
-                [self displayDocumentIGO:fileToShare restrictLocalStorage callback:callback];
+                [self displayDocumentIGO:fileToShare callback:callback];
             } else {
                 [self displayDocument:fileToShare restrictLocalStorage:restrictLocalStorage callback:callback];
             }
