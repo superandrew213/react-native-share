@@ -100,9 +100,9 @@ RCT_EXPORT_METHOD(open:(NSDictionary *)options :(RCTResponseSenderBlock)callback
         }
         // Can't delete asset after it has been posted - user input required everytime
         // Temp solution is to just hide it
-        if (restrictLocalStorage) {
-            assetChangeRequest.hidden = true;
-        }
+//        if (restrictLocalStorage) {
+//            assetChangeRequest.hidden = true;
+//        }
         localId = [[assetChangeRequest placeholderForCreatedAsset] localIdentifier];
     } completionHandler:^(BOOL success, NSError *error) {
         if (success) {
